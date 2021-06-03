@@ -20,7 +20,6 @@ public class HighscoreActivity extends AppCompatActivity {
         db = new TronDB(this);
         db.open();
         LinkedHashMap<String, String> userxscorehm = db.getScores();
-        Log.d("shittylog", "size: "+ Integer.toString(userxscorehm.size()));
         db.close();
         Log.d("shittylog", "inserting scores!!");
 
@@ -28,8 +27,10 @@ public class HighscoreActivity extends AppCompatActivity {
             Log.d("shittylog", u);
             String usertext = usertextview.getText().toString();
             String scoretext = scoretextview.getText().toString();
-            usertextview.setText(usertext + u +"\n");
-            scoretextview.setText(scoretext + s + "\n");
+            usertext = usertext + u +"\n";
+            scoretext = scoretext + s + "\n";
+            usertextview.setText(usertext);
+            scoretextview.setText(scoretext);
         });
 
         Log.d("shittylog", "scores inserted!");

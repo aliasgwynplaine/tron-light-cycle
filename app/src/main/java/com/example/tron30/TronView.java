@@ -13,19 +13,20 @@ import android.view.SurfaceView;
 import androidx.core.content.res.ResourcesCompat;
 
 public class TronView extends SurfaceView implements Runnable {
-    Thread gamethread = null;
-    SurfaceHolder holder;
-    boolean playing;
-    Paint paint;
-    Canvas canvas;
+    private Thread gamethread = null;
+    private SurfaceHolder holder;
+    private boolean playing;
+    private Paint paint;
+    private Canvas canvas;
 
     // Player properties
-    Player player;
+    protected Player player;
 
     // Map properties
-    float blockSize;
-    int numWidthBlock = 50;
-    int numHeightBlock;
+    private float blockSize;
+    private int numWidthBlock = 50;
+    private int numHeightBlock;
+    protected MapCell[][] grid;
 
     // Game properties
     private long lastFrameTime;
@@ -45,7 +46,6 @@ public class TronView extends SurfaceView implements Runnable {
         Log.d("shittylog", "Constructor 2");
         holder = getHolder();
         paint = new Paint();
-        player = new Player(0 , 0, 1);
 
         Typeface tronFont = ResourcesCompat.getFont(getContext(),R.font.tr2n);
         paint.setTypeface(tronFont);
@@ -58,11 +58,13 @@ public class TronView extends SurfaceView implements Runnable {
                  * here comes previous config
                  * calculate num of blocks
                  * */
-                int w = getWidth()-10;
-                int h = getHeight()-10;
+                int w = getWidth();
+                int h = getHeight();
 
                 blockSize = w/50f;
+                player = new Player(0 , 0, 1, blockSize, blockSize);
                 numHeightBlock = (int)Math.ceil(h/blockSize);
+                grid = new MapCell[w][h];
 
                 player.setPos(numWidthBlock/4, numHeightBlock/2);
                 player.setWidth(blockSize/2);
@@ -117,14 +119,21 @@ public class TronView extends SurfaceView implements Runnable {
             // Help size text
             paint.setColor(Color.WHITE);
             paint.setTextSize(2*blockSize);
+            // debug info
             canvas.drawText(
-                    "height: "+ height +" width: "+ width,
+                    "grid: height: "+ height +" width: "+ width,
                     20,
                     100,
                     paint
             );
             canvas.drawText(
-                    "WIDE:"+ numWidthBlock +" HEIGHT: "+ numHeightBlock +
+                    "grid: blockH: "+ numHeightBlock +" blockW: "+ numWidthBlock,
+                    20,
+                    150,
+                    paint
+            );
+            canvas.drawText(
+                    "user01: width:"+ player.getWidth()+" height: "+ player.getHeight() +
                          " X: "+ player.getPosx()+" Y:"+ player.getPosy(),
                     20,
                     200,
@@ -137,20 +146,33 @@ public class TronView extends SurfaceView implements Runnable {
                     paint
             );
 
+            // Draw Grid
+            paint.setColor(Color.rgb(0x11, 0x11, 0x11));
+            paint.setStrokeWidth(0);
+            // border
+            for (int i = 0; i <= numWidthBlock ; i++) {
+                canvas.drawLine(i*blockSize,0,i*blockSize, height, paint);
+            }
+            for (int j = 0; j <= numHeightBlock; j++) {
+                canvas.drawLine(0, j*blockSize, width, j*blockSize, paint);
+            }
+
             // SetBorder
-            paint.setColor(Color.CYAN);
-            canvas.drawRect(0, 0, width,5,paint);
-            canvas.drawRect(width-5, 0, width,height,paint);
-            canvas.drawRect(0, height-5, width,height,paint);
-            canvas.drawRect(0, 0, 5,height,paint);
+            paint.setColor(Color.GREEN);
+            paint.setStrokeWidth(blockSize*0.75f);
+            paint.setStyle(Paint.Style.STROKE);
+            canvas.drawRect(0, 0, width, height, paint);
+            paint.setStyle(Paint.Style.FILL);
 
             // Draw Player
             if (player.isAlive()) {
                 paint.setColor(Color.CYAN);
-                canvas.drawRect(10+player.getPosx() * blockSize,
-                        10+player.getPosy() * blockSize,
-                        10+player.getPosx() * blockSize + player.getWidth(),
-                        10+player.getPosy() * blockSize + player.getHeight(), paint);
+                canvas.drawRect(player.getPosx() * blockSize + blockSize/2,
+                        player.getPosy() * blockSize + blockSize/2,
+                        player.getPosx() * blockSize + player.getWidth() + blockSize/2,
+                        player.getPosy() * blockSize + player.getHeight() + blockSize/2,
+                        paint
+                );
             } else {
                 // Explosion
                 paint.setColor(Color.RED);
@@ -160,16 +182,6 @@ public class TronView extends SurfaceView implements Runnable {
                         5*blockSize,
                         paint
                 );
-            }
-            // Draw Grid
-            paint.setColor(Color.DKGRAY);
-            paint.setStrokeWidth(0);
-            // border
-            for (int i = 0; i < numWidthBlock ; i++){
-                canvas.drawLine(10+i*blockSize,10,10+i*blockSize, 10+height, paint);
-            }
-            for (int j = 0; j < numHeightBlock; j++){
-                canvas.drawLine(10, 10+j*blockSize, 10+width, 10+j*blockSize, paint);
             }
 
             // GAME OVER MESSAGE
@@ -199,7 +211,7 @@ public class TronView extends SurfaceView implements Runnable {
                 paint.setTextSize(3*blockSize);
                 paint.setColor(Color.WHITE);
                 canvas.drawText("Press Boost button", width*0.1f, height*0.7f, paint);
-                canvas.drawText("to restart", width*0.1f, height*0.7f+3*blockSize, paint);
+                canvas.drawText("to restart!", width*0.1f, height*0.7f+3*blockSize, paint);
 
                 paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
 
@@ -209,28 +221,25 @@ public class TronView extends SurfaceView implements Runnable {
         }
     }
 
-    public void tryCollision(Player p){
-        if (p.getDir() == 0 || p.getDir() == 1){
-            int newPosition = p.tryPosition();
-            if (newPosition < 0 || newPosition>=numHeightBlock ){
+    public void tryCollision(Player p) {
+        int newPosition = p.tryPosition();
+        if (p.getDir() == 0 || p.getDir() == 1) {
+            if (newPosition < 0 || newPosition >= numHeightBlock - 1) {
                 p.kill();
             }
-        } else {
-            if (p.getDir() == 2 || p.getDir() == 3){
-                int newPosition = p.tryPosition();
-                if (newPosition < 0 || newPosition >= numWidthBlock ){
-                    p.kill();
-                }
+        }
+        if (p.getDir() == 2 || p.getDir() == 3) {
+            if (newPosition < 0 || newPosition >= numWidthBlock - 1) {
+                p.kill();
             }
         }
     }
 
     public void update() {
         if (player != null) {
-            if (player.isAlive()){
+            if (player.isAlive()) {
                 tryCollision(player);
                 player.move();
-
             }
         }
     }

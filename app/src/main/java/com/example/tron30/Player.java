@@ -13,19 +13,19 @@ public class Player {
     private boolean isalive;
     CountDownTimer boostTimer;
 
-    public Player(int x, int y, int vel) {
+    public Player(int x, int y, int vel, float height, float width) {
         isalive = true;
         posx = x;
         posy = y;
         velocity = vel; // * be careful
-        height = 50;
-        width = 50;
-        boostTimer = new CountDownTimer(300, 150) {
+        this.height = height;
+        this.width = width;
+        boostTimer = new CountDownTimer(500, 500) {
             @Override
             public void onTick(long millisUntilFinished) { velocity += 1; }
 
             @Override
-            public void onFinish() { velocity -= 2; }
+            public void onFinish() { velocity = 1; }
         };
     }
 
@@ -35,12 +35,12 @@ public class Player {
         posy = y;
         velocity = vel;
         this.fuel = fuel;
-        boostTimer = new CountDownTimer(300, 150) {
+        boostTimer = new CountDownTimer(500, 500) {
             @Override
             public void onTick(long millisUntilFinished) { velocity += 1; }
 
             @Override
-            public void onFinish() { velocity -= 2; }
+            public void onFinish() { velocity = 1; }
         };
     }
 
@@ -67,9 +67,12 @@ public class Player {
         }
     }
 
-    public void boost() { boostTimer.start(); }
+    public void boost() { if (fuel > 0) boostTimer.start(); fuel--;}
 
     public int tryPosition() {
+        /*
+        Returns next position
+         */
         switch (dir){ // 0: up, 1: down, 2: left, 3: right
             case 0:
                 return posy - velocity;

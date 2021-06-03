@@ -69,8 +69,9 @@ public class GameActivity extends AppCompatActivity {
                     return;
                 }
                 if (tronView.player.getVelocity() == 1)
-                    tronView.player.boost();
-                // todo: add timer thread to get the velocity to 1
+                    //tronView.player.boost();
+                    tronView.player.setVelocity(0);
+                else tronView.player.setVelocity(1);
             }
         });
     }
