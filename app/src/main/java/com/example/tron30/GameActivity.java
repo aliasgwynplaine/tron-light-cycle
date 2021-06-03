@@ -64,11 +64,11 @@ public class GameActivity extends AppCompatActivity {
         boostButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!tronView.player.isalive) {
+                if (!tronView.player.isAlive()) {
                     tronView.resetGame();
                     return;
                 }
-                if (tronView.player.velocity == 1)
+                if (tronView.player.getVelocity() == 1)
                     tronView.player.boost();
                 // todo: add timer thread to get the velocity to 1
             }

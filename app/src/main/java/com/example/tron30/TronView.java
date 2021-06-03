@@ -145,7 +145,7 @@ public class TronView extends SurfaceView implements Runnable {
             canvas.drawRect(0, 0, 5,height,paint);
 
             // Draw Player
-            if (player.isalive) {
+            if (player.isAlive()) {
                 paint.setColor(Color.CYAN);
                 canvas.drawRect(10+player.getPosx() * blockSize,
                         10+player.getPosy() * blockSize,
@@ -173,7 +173,7 @@ public class TronView extends SurfaceView implements Runnable {
             }
 
             // GAME OVER MESSAGE
-            if (!player.isalive) {
+            if (!player.isAlive()) {
                 paint.setMaskFilter(null);
                 paint.setTextSize(7*blockSize);
                 paint.setColor(Color.CYAN);
@@ -210,13 +210,13 @@ public class TronView extends SurfaceView implements Runnable {
     }
 
     public void tryCollision(Player p){
-        if (p.dir == 0 || p.dir == 1){
+        if (p.getDir() == 0 || p.getDir() == 1){
             int newPosition = p.tryPosition();
             if (newPosition < 0 || newPosition>=numHeightBlock ){
                 p.kill();
             }
         } else {
-            if (p.dir == 2 || p.dir == 3){
+            if (p.getDir() == 2 || p.getDir() == 3){
                 int newPosition = p.tryPosition();
                 if (newPosition < 0 || newPosition >= numWidthBlock ){
                     p.kill();
@@ -227,7 +227,7 @@ public class TronView extends SurfaceView implements Runnable {
 
     public void update() {
         if (player != null) {
-            if (player.isalive){
+            if (player.isAlive()){
                 tryCollision(player);
                 player.move();
 
@@ -251,7 +251,7 @@ public class TronView extends SurfaceView implements Runnable {
     }
 
     public void resetGame(){
-        player.isalive = true;
+        player.setAlive();
         player.setPos(numWidthBlock/4, numHeightBlock/2);
         player.setDir(3);
         player.setVelocity(1);

@@ -3,14 +3,14 @@ package com.example.tron30;
 import android.os.CountDownTimer;
 
 public class Player {
-    int posx, posy;
-    int dir = 3; // 0: up, 1: down, 2: left, 3: right
-    int fuel = 3;
-    int color;
-    float height;
-    float width;
-    int velocity;
-    boolean isalive;
+    private int posx, posy;
+    private int dir = 3; // 0: up, 1: down, 2: left, 3: right
+    private int fuel = 3;
+    private int color;
+    private float height;
+    private float width;
+    private int velocity;
+    private boolean isalive;
     CountDownTimer boostTimer;
 
     public Player(int x, int y, int vel) {
@@ -22,14 +22,10 @@ public class Player {
         width = 50;
         boostTimer = new CountDownTimer(300, 150) {
             @Override
-            public void onTick(long millisUntilFinished) {
-                velocity += 1;
-            }
+            public void onTick(long millisUntilFinished) { velocity += 1; }
 
             @Override
-            public void onFinish() {
-                velocity -= 2;
-            }
+            public void onFinish() { velocity -= 2; }
         };
     }
 
@@ -41,14 +37,10 @@ public class Player {
         this.fuel = fuel;
         boostTimer = new CountDownTimer(300, 150) {
             @Override
-            public void onTick(long millisUntilFinished) {
-                velocity += 1;
-            }
+            public void onTick(long millisUntilFinished) { velocity += 1; }
 
             @Override
-            public void onFinish() {
-                velocity -= 2;
-            }
+            public void onFinish() { velocity -= 2; }
         };
     }
 
@@ -56,6 +48,7 @@ public class Player {
 
     public boolean isAlive() {  return isalive; }
     public void kill() { isalive = false; }
+    public void setAlive() { isalive = true; }
 
     public void move() {
         switch (dir){ // 0: up, 1: down, 2: left, 3: right
