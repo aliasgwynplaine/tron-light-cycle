@@ -11,6 +11,7 @@ public class Player {
     private float width;
     private int velocity;
     private boolean isalive;
+    private boolean boosted;
     CountDownTimer boostTimer;
 
     public Player(int x, int y, int vel, float height, float width) {
@@ -25,7 +26,7 @@ public class Player {
             public void onTick(long millisUntilFinished) { velocity += 1; }
 
             @Override
-            public void onFinish() { velocity = 1; }
+            public void onFinish() { velocity = 1; boosted = false;}
         };
     }
 
@@ -47,7 +48,7 @@ public class Player {
     public void setPos(int x, int y) { posx = x; posy = y; }
 
     public boolean isAlive() {  return isalive; }
-    public void kill() { isalive = false; }
+    public void kill() { isalive = false; boosted = false; }
     public void setAlive() { isalive = true; }
 
     public void move() {
@@ -67,7 +68,15 @@ public class Player {
         }
     }
 
-    public void boost() { if (fuel > 0) boostTimer.start(); fuel--;}
+    public void boost() {
+        if (fuel > 0) {
+            boosted = true;
+            boostTimer.start();
+        }
+        fuel--;
+    }
+
+    public void fillfuel() { fuel = 3; }
 
     public int tryPosition() {
         /*
@@ -117,4 +126,6 @@ public class Player {
     public float getHeight() { return height; }
 
     public float getWidth() { return width; }
+
+    public boolean isBoosted() { return boosted; }
 }
