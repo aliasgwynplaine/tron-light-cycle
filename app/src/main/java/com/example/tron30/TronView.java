@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import androidx.core.content.res.ResourcesCompat;
 
+
 public class TronView extends SurfaceView implements Runnable {
     private Thread gamethread = null;
     private SurfaceHolder holder;
@@ -61,10 +62,17 @@ public class TronView extends SurfaceView implements Runnable {
                 int w = getWidth();
                 int h = getHeight();
 
-                blockSize = w/50f;
+                blockSize = w/(float)numWidthBlock;
                 player = new Player(0 , 0, 1, blockSize, blockSize);
                 numHeightBlock = (int)Math.ceil(h/blockSize);
-                grid = new MapCell[w][h];
+                grid = new MapCell[numWidthBlock][numHeightBlock];
+                Log.d("shittylog", "h, k: "+ grid.length +", "+ grid[0].length);
+
+                for (int i = 0; i < grid.length; i++) {
+                    for (int j = 0; j < grid[0].length; j++) {
+                        grid[i][j] = new MapCell();
+                    }
+                }
 
                 player.setPos(numWidthBlock/4, numHeightBlock/2);
                 player.setWidth(blockSize/2);
@@ -92,12 +100,9 @@ public class TronView extends SurfaceView implements Runnable {
 
     @Override
     public void run() {
-//        Log.d("shittylog", "Thread is running now!!!");
-//        Log.d("shittylog", "playing: " + Boolean.toString(playing));
         int height = getHeight();
         int width = getWidth();
-//        Log.d("shittylog", "height: " + Integer.toString(getHeight()));
-//        Log.d("shittylog", " width: " + Integer.toString(getWidth()));
+
         while (playing) {
             update();
             draw();
@@ -133,7 +138,7 @@ public class TronView extends SurfaceView implements Runnable {
                     paint
             );
             canvas.drawText(
-                    "user01: width:"+ player.getWidth()+" height: "+ player.getHeight() +
+                    "user02: width:"+ player.getWidth()+" height: "+ player.getHeight() +
                          " X: "+ player.getPosx()+" Y:"+ player.getPosy(),
                     20,
                     200,
@@ -146,7 +151,7 @@ public class TronView extends SurfaceView implements Runnable {
                     paint
             );
 
-            // Draw Grid
+            // Draw Mesh
             paint.setColor(Color.rgb(0x11, 0x11, 0x11));
             paint.setStrokeWidth(0);
             // border
@@ -159,18 +164,37 @@ public class TronView extends SurfaceView implements Runnable {
 
             // SetBorder
             paint.setColor(Color.GREEN);
-            paint.setStrokeWidth(blockSize*0.75f);
+            paint.setStrokeWidth(blockSize*.75f);
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawRect(0, 0, width, height, paint);
             paint.setStyle(Paint.Style.FILL);
 
+            // Rails
+
+            for (int i = 0; i < grid.length; i++) {
+                for (int j = 0; j < grid[0].length; j++) {
+                    if (grid[i][j].isOn()) {
+                        paint.setColor(grid[i][j].getColor());
+                        paint.setStrokeWidth(blockSize/2);
+
+                        canvas.drawPoint(i*blockSize, j*blockSize, paint);
+                        /*canvas.drawRect(i * blockSize + blockSize/2,
+                                j * blockSize + blockSize/2,
+                                i * blockSize + player.getWidth() + blockSize/2,
+                                j * blockSize + player.getHeight() + blockSize/2,
+                                paint
+                        );*/
+                    }
+                }
+            }
+
             // Draw Player
             if (player.isAlive()) {
+                paint.setStrokeWidth(blockSize);
                 paint.setColor(Color.CYAN);
-                canvas.drawRect(player.getPosx() * blockSize + blockSize/2,
-                        player.getPosy() * blockSize + blockSize/2,
-                        player.getPosx() * blockSize + player.getWidth() + blockSize/2,
-                        player.getPosy() * blockSize + player.getHeight() + blockSize/2,
+                canvas.drawPoint(
+                        player.getPosx() * blockSize,
+                        player.getPosy() * blockSize,
                         paint
                 );
             } else {
@@ -210,11 +234,9 @@ public class TronView extends SurfaceView implements Runnable {
                 );
                 paint.setTextSize(3*blockSize);
                 paint.setColor(Color.WHITE);
-                canvas.drawText("Press Boost button", width*0.1f, height*0.7f, paint);
-                canvas.drawText("to restart!", width*0.1f, height*0.7f+3*blockSize, paint);
-
+                canvas.drawText("Press Boost button", width*.1f, height*.7f, paint);
+                canvas.drawText("to restart!", width*.1f, height*.7f+3*blockSize, paint);
                 paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
-
             }
             // Finish canvas
             holder.unlockCanvasAndPost(canvas);
@@ -224,14 +246,14 @@ public class TronView extends SurfaceView implements Runnable {
     public void tryCollision(Player p) {
         int newPosition = p.tryPosition();
         if (p.getDir() == 0 || p.getDir() == 1) {
-            if (newPosition < 0 || newPosition >= numHeightBlock - 1) {
-                p.kill();
-            }
+            if (newPosition > 0 && newPosition < numHeightBlock)
+                if (!grid[p.getPosx()][newPosition].isOn()) return;
+            p.kill();
         }
         if (p.getDir() == 2 || p.getDir() == 3) {
-            if (newPosition < 0 || newPosition >= numWidthBlock - 1) {
-                p.kill();
-            }
+            if (newPosition > 0 && newPosition < numWidthBlock)
+                if (!grid[newPosition][p.getPosy()].isOn()) return;
+            p.kill();
         }
     }
 
@@ -239,7 +261,30 @@ public class TronView extends SurfaceView implements Runnable {
         if (player != null) {
             if (player.isAlive()) {
                 tryCollision(player);
+                grid[player.getPosx()][player.getPosy()].turnOn();
+                grid[player.getPosx()][player.getPosy()].setColor(Color.CYAN);
                 player.move();
+
+                if (player.isBoosted()) {
+                    switch (player.getDir()) {
+                        case 0 :
+                            grid[player.getPosx()][player.getPosy()+1].turnOn();
+                            grid[player.getPosx()][player.getPosy()+1].setColor(Color.CYAN);
+                            break;
+                        case 1 :
+                            grid[player.getPosx()][player.getPosy()-1].turnOn();
+                            grid[player.getPosx()][player.getPosy()-1].setColor(Color.CYAN);
+                            break;
+                        case 2 :
+                            grid[player.getPosx()+1][player.getPosy()].turnOn();
+                            grid[player.getPosx()+1][player.getPosy()].setColor(Color.CYAN);
+                            break;
+                        case 3 :
+                            grid[player.getPosx()-1][player.getPosy()].turnOn();
+                            grid[player.getPosx()-1][player.getPosy()].setColor(Color.CYAN);
+                            break;
+                    }
+                }
             }
         }
     }
@@ -264,7 +309,15 @@ public class TronView extends SurfaceView implements Runnable {
         player.setPos(numWidthBlock/4, numHeightBlock/2);
         player.setDir(3);
         player.setVelocity(1);
+        player.fillfuel();
+        turnOffGrid();
         paint.setMaskFilter(null);
+    }
+
+    public void turnOffGrid() {
+        for (int i = 0; i < grid.length; i++)
+            for (int j = 0; j < grid[0].length; j++)
+                grid[i][j].turnOff();
     }
 
     public void controlFPS() {
