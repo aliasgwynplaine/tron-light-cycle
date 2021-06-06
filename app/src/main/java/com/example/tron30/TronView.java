@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.fonts.Font;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -32,7 +33,7 @@ public class TronView extends SurfaceView implements Runnable {
     // Game properties
     private long lastFrameTime;
     private int fps;
-
+    private Typeface tronFont;
 
 
     public TronView(Context context) {
@@ -48,7 +49,7 @@ public class TronView extends SurfaceView implements Runnable {
         holder = getHolder();
         paint = new Paint();
 
-        Typeface tronFont = ResourcesCompat.getFont(getContext(),R.font.tr2n);
+        tronFont = ResourcesCompat.getFont(getContext(),R.font.tr2n);
         paint.setTypeface(tronFont);
         post(new Runnable() {
             @Override
@@ -64,6 +65,7 @@ public class TronView extends SurfaceView implements Runnable {
 
                 blockSize = w/(float)numWidthBlock;
                 player = new Player(0 , 0, 1, blockSize, blockSize);
+                player.setColor(Color.CYAN);
                 numHeightBlock = (int)Math.ceil(h/blockSize);
                 grid = new MapCell[numWidthBlock][numHeightBlock];
                 Log.d("shittylog", "h, k: "+ grid.length +", "+ grid[0].length);
@@ -118,35 +120,44 @@ public class TronView extends SurfaceView implements Runnable {
             // Background Color
             canvas.drawColor(Color.BLACK);
 
-            // Help size text
+            // Debug info
+            paint.setTypeface(Typeface.MONOSPACE);
             paint.setColor(Color.WHITE);
             paint.setTextSize(2*blockSize);
-            // debug info
+            paint.setMaskFilter(null);
             canvas.drawText(
                     "grid: height: "+ height +" width: "+ width,
                     20,
-                    100,
+                    2.5f*blockSize,
                     paint
             );
             canvas.drawText(
                     "grid: blockH: "+ numHeightBlock +" blockW: "+ numWidthBlock,
                     20,
-                    150,
+                    4.5f*blockSize,
                     paint
             );
             canvas.drawText(
-                    "user02: width:"+ player.getWidth()+" height: "+ player.getHeight() +
-                         " X: "+ player.getPosX()+" Y:"+ player.getPosY(),
+                    "user02: width:"+ player.getWidth()+" height: "+ player.getHeight(),
                     20,
-                    200,
+                    6.5f*blockSize,
+                    paint
+            );
+            canvas.drawText(
+                    "X: "+ player.getPosX()+" Y:"+ player.getPosY(),
+                    20,
+                    8.5f*blockSize,
                     paint
             );
             canvas.drawText(
                     "velocity: " + player.getVelocity(),
                     20,
-                    300,
+                    10.5f*blockSize,
                     paint
             );
+            if(!player.isAlive())
+               paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
+            paint.setTypeface(tronFont);
 
             // Draw Mesh
             paint.setColor(Color.rgb(0x11, 0x11, 0x11));
@@ -166,21 +177,53 @@ public class TronView extends SurfaceView implements Runnable {
             canvas.drawRect(0, 0, width, height, paint);
             paint.setStyle(Paint.Style.FILL);
 
-            // Rails
-
+            // Rails Walls
             for (int i = 0; i < grid.length; i++) {
                 for (int j = 0; j < grid[0].length; j++) {
                     if (grid[i][j].isOn()) {
                         paint.setColor(grid[i][j].getColor());
-                        paint.setStrokeWidth(blockSize/2);
-
-                        canvas.drawPoint(i*blockSize, j*blockSize, paint);
-                        /*canvas.drawRect(i * blockSize + blockSize/2,
-                                j * blockSize + blockSize/2,
-                                i * blockSize + player.getWidth() + blockSize/2,
-                                j * blockSize + player.getHeight() + blockSize/2,
-                                paint
-                        );*/
+                        switch (grid[i][j].getDirection()) {// 0: up, 1: down, 2: left, right: 3, 4: 02, 5: 03, 6: 12, 7: 13, 8: 20, 9: 21, 10: 30, 11: 31
+                            case 0:
+                            case 1:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
+                                break;
+                            case 2:
+                            case 3:
+                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 4:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
+                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 5:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 6:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 7:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 8:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 9:
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
+                                break;
+                            case 10:
+                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                break;
+                            case 11:
+                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
+                                break;
+                        }
                     }
                 }
             }
@@ -188,14 +231,14 @@ public class TronView extends SurfaceView implements Runnable {
             // Draw Player
             if (player.isAlive()) {
                 paint.setStrokeWidth(blockSize);
-                paint.setColor(Color.CYAN);
+                paint.setColor(player.getColor());
                 canvas.drawPoint(
                         player.getPosX() * blockSize,
                         player.getPosY() * blockSize,
                         paint
                 );
             } else {
-                // Explosion
+                // Draw Explosion
                 paint.setColor(Color.RED);
                 canvas.drawCircle(
                         player.getPosX()*blockSize,
@@ -212,20 +255,20 @@ public class TronView extends SurfaceView implements Runnable {
                 paint.setColor(Color.CYAN);
                 canvas.drawText(
                         "GAME OVER",
-                        width*.1f,
+                        width*.07f,
                         height*.5f, paint
                 );
                 paint.setColor(Color.YELLOW);
                 canvas.drawText(
                         "GAME OVER",
-                        width*.1f + .5f*blockSize,
+                        width*.07f + .5f*blockSize,
                         height*.5f + .5f*blockSize,
                         paint
                 );
                 paint.setColor(Color.WHITE);
                 canvas.drawText(
                         "GAME OVER",
-                        width*.1f + blockSize,
+                        width*.07f + blockSize,
                         height*.5f + blockSize,
                         paint
                 );
@@ -242,7 +285,7 @@ public class TronView extends SurfaceView implements Runnable {
 
     public void tryCollision(Player p) {
         int newPosition = p.nextPosition();
-        Log.d("[try collition log]", "x:"+ p.getPosX()+" y:"+ p.getPosY()+" newPosition:"+newPosition+" dir:"+ p.getDir()+" Boosted:"+p.isBoosted());
+//        Log.d("[try collition log]", "x:"+ p.getPosX()+" y:"+ p.getPosY()+" newPosition:"+newPosition+" dir:"+ p.getDir()+" Boosted:"+p.isBoosted());
         if (p.getDir() == 0 || p.getDir() == 1) {// 0: up, 1: down, 2: left, 3: right
             if (newPosition > 0 && newPosition < numHeightBlock-1) {
                 if (p.getDir() == 0) {
@@ -275,29 +318,76 @@ public class TronView extends SurfaceView implements Runnable {
         }
     }
 
+    public void nextDirection(Player p, int dir){
+        int lastDir = p.getDir();
+        if (lastDir==dir){
+            grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), dir);
+        }
+        // 0: up, 1: down, 2: left, right: 3, 4: 02, 5: 03, 6: 12, 7: 13, 8: 20, 9: 21, 10: 30, 11: 31
+        if (lastDir==0){
+            if (dir==2) {
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 4);
+            }else if (dir==3){
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 5);
+            }
+        }else if (lastDir==1){
+            if (dir==2) {
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 6);
+            }else if (dir==3){
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 7);
+            }
+        }else if (lastDir==2){
+            if (dir==0) {
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 8);
+            }else if (dir==1){
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 9);
+            }
+        }else if (lastDir==3){
+            if (dir==0) {
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 10);
+            }else if (dir==1){
+                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 11);
+            }
+        }
+
+        player.setDir(dir);
+
+    }
+
     public void update() {
         if (player != null) {
             if (player.isAlive()) {
+                // Collision section
                 tryCollision(player);
-                grid[player.getPosX()][player.getPosY()].turnOn(Color.CYAN);
+
+
+                // Grid Activation section
+                final int gridDir = player.getDir();
+                if (!grid[player.getPosX()][player.getPosY()].isOn())
+                    grid[player.getPosX()][player.getPosY()].turnOn(player.getColor(), gridDir);
+
+                // Move section
                 player.move();
 
+                // Grid Activation section Boosted
                 if (player.isBoosted()) {
                     switch (player.getDir()) {
                         case 0 :
-                            grid[player.getPosX()][player.getPosY()+1].turnOn(Color.CYAN);
+                            grid[player.getPosX()][player.getPosY()+1].turnOn(player.getColor(), gridDir);
                             break;
                         case 1 :
-                            grid[player.getPosX()][player.getPosY()-1].turnOn(Color.CYAN);
+                            grid[player.getPosX()][player.getPosY()-1].turnOn(player.getColor(), gridDir);
                             break;
                         case 2 :
-                            grid[player.getPosX()+1][player.getPosY()].turnOn(Color.CYAN);
+                            grid[player.getPosX()+1][player.getPosY()].turnOn(player.getColor(), gridDir);
                             break;
                         case 3 :
-                            grid[player.getPosX()-1][player.getPosY()].turnOn(Color.CYAN);
+                            grid[player.getPosX()-1][player.getPosY()].turnOn(player.getColor(), gridDir);
                             break;
                     }
                 }
+
+
             }
         }
     }
@@ -306,6 +396,7 @@ public class TronView extends SurfaceView implements Runnable {
         playing = true;
         gamethread = new Thread(this);
         gamethread.start();
+
     }
 
     public void pause() {
@@ -341,7 +432,7 @@ public class TronView extends SurfaceView implements Runnable {
         }
         if (timeToSleep > 0) {
             try {
-                gamethread.sleep(timeToSleep);
+                Thread.sleep(timeToSleep);
             } catch (InterruptedException e) {
                 Log.d("shittylog", e.getMessage());
                 e.printStackTrace();

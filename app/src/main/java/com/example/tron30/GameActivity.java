@@ -32,7 +32,8 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(tronView.player.getDir() != 1 && tronView.player.getDir() !=0){
-                    tronView.player.setDir(0);
+//                    tronView.player.setDir(0);
+                    tronView.nextDirection(tronView.player, 0);
                 }
             }
         });
@@ -40,7 +41,8 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(tronView.player.getDir() != 1 && tronView.player.getDir() != 0){
-                    tronView.player.setDir(1);
+//                    tronView.player.setDir(1);
+                    tronView.nextDirection(tronView.player, 1);
                 }
             }
         });
@@ -48,7 +50,8 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(tronView.player.getDir() != 2 && tronView.player.getDir() != 3){
-                    tronView.player.setDir(2);
+//                    tronView.player.setDir(2);
+                    tronView.nextDirection(tronView.player, 2);
                 }
             }
         });
@@ -56,7 +59,8 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(tronView.player.getDir() != 2 && tronView.player.getDir() != 3){
-                    tronView.player.setDir(3);
+//                    tronView.player.setDir(3);
+                    tronView.nextDirection(tronView.player, 3);
                 }
             }
         });
