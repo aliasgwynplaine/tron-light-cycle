@@ -3,7 +3,7 @@ package com.example.tron30;
 import android.os.CountDownTimer;
 
 public class Player {
-    private int posx, posy;
+    private int posX, posY;
     private int dir = 3; // 0: up, 1: down, 2: left, 3: right
     private int fuel = 3;
     private int color;
@@ -16,8 +16,8 @@ public class Player {
 
     public Player(int x, int y, int vel, float height, float width) {
         isalive = true;
-        posx = x;
-        posy = y;
+        posX = x;
+        posY = y;
         velocity = vel; // * be careful
         this.height = height;
         this.width = width;
@@ -32,8 +32,8 @@ public class Player {
 
     public Player(int x, int y, int fuel, int vel) {
         isalive = true;
-        posx = x;
-        posy = y;
+        posX = x;
+        posY = y;
         velocity = vel;
         this.fuel = fuel;
         boostTimer = new CountDownTimer(500, 500) {
@@ -45,7 +45,7 @@ public class Player {
         };
     }
 
-    public void setPos(int x, int y) { posx = x; posy = y; }
+    public void setPos(int x, int y) { posX = x; posY = y; }
 
     public boolean isAlive() {  return isalive; }
     public void kill() { isalive = false; boosted = false; }
@@ -54,16 +54,16 @@ public class Player {
     public void move() {
         switch (dir){ // 0: up, 1: down, 2: left, 3: right
             case 0:
-                posy = posy - velocity;
+                posY = posY - velocity;
                 break;
             case 1:
-                posy = posy + velocity;
+                posY = posY + velocity;
                 break;
             case 2:
-                posx = posx - velocity;
+                posX = posX - velocity;
                 break;
             case 3:
-                posx = posx + velocity;
+                posX = posX + velocity;
                 break;
         }
     }
@@ -78,26 +78,26 @@ public class Player {
 
     public void fillfuel() { fuel = 3; }
 
-    public int tryPosition() {
+    public int nextPosition() {
         /*
         Returns next position
          */
         switch (dir){ // 0: up, 1: down, 2: left, 3: right
             case 0:
-                return posy - velocity;
+                return posY - velocity;
             case 1:
-                return posy + velocity;
+                return posY + velocity;
             case 2:
-                return posx - velocity;
+                return posX - velocity;
             case 3:
-                return posx + velocity;
+                return posX + velocity;
         }
         return 0;
     }
 
-    public void setPosx(int posx) { this.posx = posx; }
+    public void setPosX(int posX) { this.posX = posX; }
 
-    public void setPosy(int posy) { this.posy = posy; }
+    public void setPosY(int posY) { this.posY = posY; }
 
     public void setDir(int dir) { this.dir = dir; }
 
@@ -111,9 +111,9 @@ public class Player {
 
     public void setWidth(float width) { this.width = width; }
 
-    public int getPosx() { return posx; }
+    public int getPosX() { return posX; }
 
-    public int getPosy() { return posy; }
+    public int getPosY() { return posY; }
 
     public int getDir() { return dir; }
 

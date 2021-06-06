@@ -100,9 +100,6 @@ public class TronView extends SurfaceView implements Runnable {
 
     @Override
     public void run() {
-        int height = getHeight();
-        int width = getWidth();
-
         while (playing) {
             update();
             draw();
@@ -111,7 +108,7 @@ public class TronView extends SurfaceView implements Runnable {
     }
 
     public void draw() {
-        if (holder.getSurface().isValid()) {
+        if (holder.getSurface().isValid() && player != null) {
 
             int height = getHeight();
             int width  = getWidth();
@@ -139,7 +136,7 @@ public class TronView extends SurfaceView implements Runnable {
             );
             canvas.drawText(
                     "user02: width:"+ player.getWidth()+" height: "+ player.getHeight() +
-                         " X: "+ player.getPosx()+" Y:"+ player.getPosy(),
+                         " X: "+ player.getPosX()+" Y:"+ player.getPosY(),
                     20,
                     200,
                     paint
@@ -193,16 +190,16 @@ public class TronView extends SurfaceView implements Runnable {
                 paint.setStrokeWidth(blockSize);
                 paint.setColor(Color.CYAN);
                 canvas.drawPoint(
-                        player.getPosx() * blockSize,
-                        player.getPosy() * blockSize,
+                        player.getPosX() * blockSize,
+                        player.getPosY() * blockSize,
                         paint
                 );
             } else {
                 // Explosion
                 paint.setColor(Color.RED);
                 canvas.drawCircle(
-                        player.getPosx()*blockSize,
-                        player.getPosy()*blockSize,
+                        player.getPosX()*blockSize,
+                        player.getPosY()*blockSize,
                         5*blockSize,
                         paint
                 );
@@ -244,15 +241,36 @@ public class TronView extends SurfaceView implements Runnable {
     }
 
     public void tryCollision(Player p) {
-        int newPosition = p.tryPosition();
-        if (p.getDir() == 0 || p.getDir() == 1) {
-            if (newPosition > 0 && newPosition < numHeightBlock)
-                if (!grid[p.getPosx()][newPosition].isOn()) return;
+        int newPosition = p.nextPosition();
+        Log.d("[try collition log]", "x:"+ p.getPosX()+" y:"+ p.getPosY()+" newPosition:"+newPosition+" dir:"+ p.getDir()+" Boosted:"+p.isBoosted());
+        if (p.getDir() == 0 || p.getDir() == 1) {// 0: up, 1: down, 2: left, 3: right
+            if (newPosition > 0 && newPosition < numHeightBlock-1) {
+                if (p.getDir() == 0) {
+                    for (int k = p.getPosY() - 1; k >= newPosition; k--) {
+                        if (grid[p.getPosX()][k].isOn()) p.kill();
+                    }
+                } else {
+                    for (int k = p.getPosY() + 1; k <= newPosition; k++) {
+                        if (grid[p.getPosX()][k].isOn()) p.kill();
+                    }
+                }
+                return;
+            }
             p.kill();
         }
         if (p.getDir() == 2 || p.getDir() == 3) {
-            if (newPosition > 0 && newPosition < numWidthBlock)
-                if (!grid[newPosition][p.getPosy()].isOn()) return;
+            if (newPosition > 0 && newPosition < numWidthBlock) {
+                if (p.getDir()==2){
+                    for (int k = p.getPosX()-1; k>= newPosition; k--){
+                        if (grid[k][p.getPosY()].isOn()) p.kill();
+                    }
+                }else{
+                    for (int k = p.getPosX()+1; k <= newPosition; k++){
+                        if (grid[k][p.getPosY()].isOn()) p.kill();
+                    }
+                }
+                return;
+            }
             p.kill();
         }
     }
@@ -261,27 +279,22 @@ public class TronView extends SurfaceView implements Runnable {
         if (player != null) {
             if (player.isAlive()) {
                 tryCollision(player);
-                grid[player.getPosx()][player.getPosy()].turnOn();
-                grid[player.getPosx()][player.getPosy()].setColor(Color.CYAN);
+                grid[player.getPosX()][player.getPosY()].turnOn(Color.CYAN);
                 player.move();
 
                 if (player.isBoosted()) {
                     switch (player.getDir()) {
                         case 0 :
-                            grid[player.getPosx()][player.getPosy()+1].turnOn();
-                            grid[player.getPosx()][player.getPosy()+1].setColor(Color.CYAN);
+                            grid[player.getPosX()][player.getPosY()+1].turnOn(Color.CYAN);
                             break;
                         case 1 :
-                            grid[player.getPosx()][player.getPosy()-1].turnOn();
-                            grid[player.getPosx()][player.getPosy()-1].setColor(Color.CYAN);
+                            grid[player.getPosX()][player.getPosY()-1].turnOn(Color.CYAN);
                             break;
                         case 2 :
-                            grid[player.getPosx()+1][player.getPosy()].turnOn();
-                            grid[player.getPosx()+1][player.getPosy()].setColor(Color.CYAN);
+                            grid[player.getPosX()+1][player.getPosY()].turnOn(Color.CYAN);
                             break;
                         case 3 :
-                            grid[player.getPosx()-1][player.getPosy()].turnOn();
-                            grid[player.getPosx()-1][player.getPosy()].setColor(Color.CYAN);
+                            grid[player.getPosX()-1][player.getPosY()].turnOn(Color.CYAN);
                             break;
                     }
                 }
