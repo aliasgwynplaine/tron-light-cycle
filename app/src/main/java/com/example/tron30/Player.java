@@ -13,8 +13,11 @@ public class Player {
     private int velocity;
     private boolean isalive;
     private boolean boosted;
+    private int explotionState=0;
+
     protected MapCell[][] grid;
     CountDownTimer boostTimer;
+    CountDownTimer exploitTimer;
 
     public Player(int x, int y, int vel, float height, float width) {
         isalive = true;
@@ -30,6 +33,13 @@ public class Player {
             @Override
             public void onFinish() { velocity = 1; boosted = false;}
         };
+        exploitTimer = new CountDownTimer(700, 50) {
+            @Override
+            public void onTick(long millisUntilFinished) { explotionState += 1;Log.d("miau", explotionState+"");}
+
+            @Override
+            public void onFinish() { explotionState = -1;}
+        };
     }
 
     public Player(int x, int y, int fuel, int vel) {
@@ -44,6 +54,14 @@ public class Player {
 
             @Override
             public void onFinish() { velocity = 1; }
+        };
+
+        exploitTimer = new CountDownTimer(10000, 500) {
+            @Override
+            public void onTick(long millisUntilFinished) { explotionState += 1;Log.d("miau", explotionState+"");}
+
+            @Override
+            public void onFinish() { explotionState = 1;}
         };
     }
 
@@ -86,6 +104,11 @@ public class Player {
             boostTimer.start();
         }
         fuel--;
+    }
+
+    public void exploit(){
+        if (explotionState == 0)
+            exploitTimer.start();
     }
 
     public void fillfuel() {
@@ -249,6 +272,14 @@ public class Player {
 
     public void setGrid(MapCell[][] grid) {
         this.grid = grid;
+    }
+
+    public void setExplotionState(int explotionState) {
+        this.explotionState = explotionState;
+    }
+
+    public int getExplotionState() {
+        return explotionState;
     }
 
     public int getPosX() { return posX; }

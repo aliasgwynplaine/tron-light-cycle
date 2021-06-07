@@ -12,6 +12,10 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
+
 import androidx.core.content.res.ResourcesCompat;
 
 
@@ -38,11 +42,15 @@ public class TronView extends SurfaceView implements Runnable {
     private long lastFrameTime;
     private int fps;
     private Typeface tronFont;
+
     // Sound
     private MediaPlayer mp;
     private MediaPlayer mpBoom;
     boolean boom = false;
     private int level = 3;
+
+    // Efect properties
+    private Animation animation;
 
     public TronView(Context context) {
         super(context);
@@ -264,13 +272,25 @@ public class TronView extends SurfaceView implements Runnable {
                 );
             } else {
                 // Draw Explosion
+
                 paint.setColor(Color.RED);
+//                canvas.drawCircle(
+//                        player.getPosX()*blockSize,
+//                        player.getPosY()*blockSize,
+//                        5*blockSize,
+//                        paint
+//                );
+
+                paint.setStrokeWidth(blockSize*.5f);
+                paint.setStyle(Paint.Style.STROKE);
+
                 canvas.drawCircle(
-                        player.getPosX()*blockSize,
-                        player.getPosY()*blockSize,
-                        5*blockSize,
+                        player.getPosX() * blockSize,
+                        player.getPosY() * blockSize,
+                        player.getExplotionState() * blockSize,
                         paint
                 );
+                paint.setStyle(Paint.Style.FILL);
             }
 
             // Draw Enemies
@@ -337,6 +357,11 @@ public class TronView extends SurfaceView implements Runnable {
                 mp.start();
                 player.update();
             }else{
+                Log.d("miau", player.getExplotionState()+"");
+
+                if (player.getExplotionState() == 0) {
+                    player.exploit();
+                }
                 if (!boom) {
                     mpBoom.start();
                     boom = true;
@@ -377,6 +402,7 @@ public class TronView extends SurfaceView implements Runnable {
         player.setDir(3);
         player.setVelocity(1);
         player.fillfuel();
+        player.setExplotionState(0);
 
         // Reset enemies
         for (int i=0; i< level; i++){
@@ -401,6 +427,41 @@ public class TronView extends SurfaceView implements Runnable {
         for (int i = 0; i < grid.length; i++)
             for (int j = 0; j < grid[0].length; j++)
                 grid[i][j].turnOff();
+    }
+
+    private void createAnimation(Canvas canvas) {
+        animation = new RotateAnimation(0, 360, 150, 150);
+        animation.setRepeatCount(3);
+        animation.setRepeatMode(0);
+        animation.setDuration(10000);
+        //animation.setDuration(20); //You can manage the time of the blink with this parameter
+        //animation.setStartOffset(20);
+        animation.setInterpolator(new LinearInterpolator());
+        startAnimation(animation);
+        new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                animation.cancel();
+                clearAnimation();
+                createAnimation(canvas);
+//                animation.reset();
+            }
+        };
+    }
+    private void createAnimation_2(Canvas canvas) {
+        animation = new RotateAnimation(0, 0, 150, 150);
+        animation.setRepeatCount(3);
+        animation.setRepeatMode(0);
+        animation.setDuration(10000);
+        //animation.setDuration(20); //You can manage the time of the blink with this parameter
+        //animation.setStartOffset(20);
+        animation.setInterpolator(new LinearInterpolator());
+        startAnimation(animation);
     }
 
     public void controlFPS() {

@@ -12,7 +12,7 @@ public class Enemy extends Player{
     }
 
     public void AiDecition(){
-        // And he is JOHN CENAAAAAAAA!!!
+        // And here is JOHN CENAAAAAAAA!!!
     }
 
 }
