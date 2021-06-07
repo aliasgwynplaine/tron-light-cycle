@@ -13,9 +13,10 @@
         android:id="@+id/helptextview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/tr2n"
         android:text="@string/instructions"
         android:textColor="@color/teal_200"
-        android:textSize="30sp"
+        android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -36,16 +37,15 @@
             <TextView
                 android:id="@+id/instructiontextview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="392dp"
                 android:ems="10"
                 android:fontFamily="@font/tr2n"
-                android:lines="10"
                 android:maxLines="100"
                 android:minLines="10"
                 android:singleLine="false"
                 android:text="@string/you_ride_a_lightcycle_that_gives_off_a_rail_as_you_move_around_the_closed_arena_nwhat_are_you_supposed_to_do_survive_nyou_need_to_force_the_enemies_lightcycles_into_walls_and_light_cycles_rails_while_simultaneously_avoid_them_use_the_arrows_to_move_and_the_other_button_to_boost_you_only_have_three_oportunities_to_boost_on_each_level"
                 android:textColor="@color/teal_200"
-                android:textSize="14sp" />
+                android:textSize="20sp" />
 
         </LinearLayout>
     </ScrollView>

@@ -26,7 +26,7 @@ public class TronView extends SurfaceView implements Runnable {
     protected Player player;
 
     // Enemy properties
-    Enemy enemies;
+    Enemy[] enemies;
 
     // Map properties
     private float blockSize;
@@ -38,7 +38,11 @@ public class TronView extends SurfaceView implements Runnable {
     private long lastFrameTime;
     private int fps;
     private Typeface tronFont;
+    // Sound
     private MediaPlayer mp;
+    private MediaPlayer mpBoom;
+    boolean boom = false;
+    private int level = 3;
 
     public TronView(Context context) {
         super(context);
@@ -54,6 +58,7 @@ public class TronView extends SurfaceView implements Runnable {
         paint = new Paint();
 
         mp = MediaPlayer.create(getContext(), R.raw.derezzed);
+        mpBoom = MediaPlayer.create(getContext(), R.raw.explosion);
         tronFont = ResourcesCompat.getFont(getContext(),R.font.tr2n);
         paint.setTypeface(tronFont);
         post(new Runnable() {
@@ -83,6 +88,18 @@ public class TronView extends SurfaceView implements Runnable {
                 player = new Player(numWidthBlock/4, numHeightBlock/2, 1, blockSize/2, blockSize/2);
                 player.setColor(Color.CYAN);
                 player.setGrid(grid);
+
+                enemies = new Enemy[3];
+                for (int i=0; i<enemies.length; i++){
+                    enemies[i] =  new Enemy(numWidthBlock*3/4, numHeightBlock/4*(i+1), 1, blockSize/2, blockSize/2);
+                    enemies[i].setGrid(grid);
+                    if (i>level){
+                        enemies[i].kill();
+                    }
+                }
+                enemies[0].setColor(Color.rgb(0xDF,0x74, 0x0C));
+                enemies[1].setColor(Color.GREEN);
+                enemies[2].setColor(Color.YELLOW);
 
                 mp.start();
 
@@ -256,6 +273,28 @@ public class TronView extends SurfaceView implements Runnable {
                 );
             }
 
+            // Draw Enemies
+            for (int i=0; i< level; i++){
+
+                if (enemies[i].isAlive()) {
+                    paint.setStrokeWidth(blockSize);
+                    paint.setColor(enemies[i].getColor());
+                    canvas.drawPoint(
+                            enemies[i].getPosX() * blockSize,
+                            enemies[i].getPosY() * blockSize,
+                            paint
+                    );
+                } else if(i <level) {
+                    // Draw Explosion
+                    paint.setColor(Color.RED);
+                    canvas.drawCircle(
+                            enemies[i].getPosX() * blockSize,
+                            enemies[i].getPosY() * blockSize,
+                            2 * blockSize,
+                            paint
+                    );
+                }
+            }
             // GAME OVER MESSAGE
             if (!player.isAlive()) {
                 paint.setMaskFilter(null);
@@ -294,11 +333,22 @@ public class TronView extends SurfaceView implements Runnable {
     public void update() {
         if (player != null) {
             if (player.isAlive()) {
+                boom = false;
                 mp.start();
                 player.update();
-
             }else{
+                if (!boom) {
+                    mpBoom.start();
+                    boom = true;
+                }
                 mp.pause();
+            }
+            // Enemies update
+            for (int i =0; i< level; i++){
+                if(enemies[i].isAlive()) {
+                    boom = false;
+                    enemies[i].update();
+                }
             }
         }
     }
@@ -321,15 +371,29 @@ public class TronView extends SurfaceView implements Runnable {
     }
 
     public void resetGame(){
+        // Reset player
         player.setAlive();
         player.setPos(numWidthBlock/4, numHeightBlock/2);
         player.setDir(3);
         player.setVelocity(1);
         player.fillfuel();
+
+        // Reset enemies
+        for (int i=0; i< level; i++){
+            enemies[i].setAlive();
+            enemies[i].setPos(numWidthBlock*3/4, numHeightBlock/4*(i+1));
+            enemies[i].setDir(2);
+            enemies[i].setVelocity(1);
+            enemies[i].fillfuel();
+        }
+
+
+        // Game properties reset
         turnOffGrid();
         paint.setMaskFilter(null);
-
         mp.seekTo(0);
+        mpBoom.seekTo(0);
+        mpBoom.pause();
         mp.start();
     }
 
