@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.fonts.Font;
+import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -24,6 +25,9 @@ public class TronView extends SurfaceView implements Runnable {
     // Player properties
     protected Player player;
 
+    // Enemy properties
+    Enemy enemies;
+
     // Map properties
     private float blockSize;
     private int numWidthBlock = 50;
@@ -34,7 +38,7 @@ public class TronView extends SurfaceView implements Runnable {
     private long lastFrameTime;
     private int fps;
     private Typeface tronFont;
-
+    private MediaPlayer mp;
 
     public TronView(Context context) {
         super(context);
@@ -49,6 +53,7 @@ public class TronView extends SurfaceView implements Runnable {
         holder = getHolder();
         paint = new Paint();
 
+        mp = MediaPlayer.create(getContext(), R.raw.derezzed);
         tronFont = ResourcesCompat.getFont(getContext(),R.font.tr2n);
         paint.setTypeface(tronFont);
         post(new Runnable() {
@@ -64,8 +69,7 @@ public class TronView extends SurfaceView implements Runnable {
                 int h = getHeight();
 
                 blockSize = w/(float)numWidthBlock;
-                player = new Player(0 , 0, 1, blockSize, blockSize);
-                player.setColor(Color.CYAN);
+
                 numHeightBlock = (int)Math.ceil(h/blockSize);
                 grid = new MapCell[numWidthBlock][numHeightBlock];
                 Log.d("shittylog", "h, k: "+ grid.length +", "+ grid[0].length);
@@ -76,9 +80,12 @@ public class TronView extends SurfaceView implements Runnable {
                     }
                 }
 
-                player.setPos(numWidthBlock/4, numHeightBlock/2);
-                player.setWidth(blockSize/2);
-                player.setHeight(blockSize/2);
+                player = new Player(numWidthBlock/4, numHeightBlock/2, 1, blockSize/2, blockSize/2);
+                player.setColor(Color.CYAN);
+                player.setGrid(grid);
+
+                mp.start();
+
                 Log.d("shittylog", "blockSize: "+ Float.toString(blockSize));
                 Log.d("shittylog", "numWidthBlock: "+ Float.toString(numWidthBlock));
                 Log.d("shittylog", "numHeightBlock: "+ Float.toString(numHeightBlock));
@@ -100,6 +107,7 @@ public class TronView extends SurfaceView implements Runnable {
         paint = new Paint();
     }
 
+    // System run
     @Override
     public void run() {
         while (playing) {
@@ -283,111 +291,14 @@ public class TronView extends SurfaceView implements Runnable {
         }
     }
 
-    public void tryCollision(Player p) {
-        int newPosition = p.nextPosition();
-//        Log.d("[try collition log]", "x:"+ p.getPosX()+" y:"+ p.getPosY()+" newPosition:"+newPosition+" dir:"+ p.getDir()+" Boosted:"+p.isBoosted());
-        if (p.getDir() == 0 || p.getDir() == 1) {// 0: up, 1: down, 2: left, 3: right
-            if (newPosition > 0 && newPosition < numHeightBlock-1) {
-                if (p.getDir() == 0) {
-                    for (int k = p.getPosY() - 1; k >= newPosition; k--) {
-                        if (grid[p.getPosX()][k].isOn()) p.kill();
-                    }
-                } else {
-                    for (int k = p.getPosY() + 1; k <= newPosition; k++) {
-                        if (grid[p.getPosX()][k].isOn()) p.kill();
-                    }
-                }
-                return;
-            }
-            p.kill();
-        }
-        if (p.getDir() == 2 || p.getDir() == 3) {
-            if (newPosition > 0 && newPosition < numWidthBlock) {
-                if (p.getDir()==2){
-                    for (int k = p.getPosX()-1; k>= newPosition; k--){
-                        if (grid[k][p.getPosY()].isOn()) p.kill();
-                    }
-                }else{
-                    for (int k = p.getPosX()+1; k <= newPosition; k++){
-                        if (grid[k][p.getPosY()].isOn()) p.kill();
-                    }
-                }
-                return;
-            }
-            p.kill();
-        }
-    }
-
-    public void nextDirection(Player p, int dir){
-        int lastDir = p.getDir();
-        if (lastDir==dir){
-            grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), dir);
-        }
-        // 0: up, 1: down, 2: left, right: 3, 4: 02, 5: 03, 6: 12, 7: 13, 8: 20, 9: 21, 10: 30, 11: 31
-        if (lastDir==0){
-            if (dir==2) {
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 4);
-            }else if (dir==3){
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 5);
-            }
-        }else if (lastDir==1){
-            if (dir==2) {
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 6);
-            }else if (dir==3){
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 7);
-            }
-        }else if (lastDir==2){
-            if (dir==0) {
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 8);
-            }else if (dir==1){
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 9);
-            }
-        }else if (lastDir==3){
-            if (dir==0) {
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 10);
-            }else if (dir==1){
-                grid[p.getPosX()][p.getPosY()].turnOn(p.getColor(), 11);
-            }
-        }
-
-        player.setDir(dir);
-
-    }
-
     public void update() {
         if (player != null) {
             if (player.isAlive()) {
-                // Collision section
-                tryCollision(player);
+                mp.start();
+                player.update();
 
-
-                // Grid Activation section
-                final int gridDir = player.getDir();
-                if (!grid[player.getPosX()][player.getPosY()].isOn())
-                    grid[player.getPosX()][player.getPosY()].turnOn(player.getColor(), gridDir);
-
-                // Move section
-                player.move();
-
-                // Grid Activation section Boosted
-                if (player.isBoosted()) {
-                    switch (player.getDir()) {
-                        case 0 :
-                            grid[player.getPosX()][player.getPosY()+1].turnOn(player.getColor(), gridDir);
-                            break;
-                        case 1 :
-                            grid[player.getPosX()][player.getPosY()-1].turnOn(player.getColor(), gridDir);
-                            break;
-                        case 2 :
-                            grid[player.getPosX()+1][player.getPosY()].turnOn(player.getColor(), gridDir);
-                            break;
-                        case 3 :
-                            grid[player.getPosX()-1][player.getPosY()].turnOn(player.getColor(), gridDir);
-                            break;
-                    }
-                }
-
-
+            }else{
+                mp.pause();
             }
         }
     }
@@ -396,11 +307,12 @@ public class TronView extends SurfaceView implements Runnable {
         playing = true;
         gamethread = new Thread(this);
         gamethread.start();
-
+        mp.start();
     }
 
     public void pause() {
         playing = false;
+        mp.pause();
         try {
             gamethread.join();
         } catch (InterruptedException e) {
@@ -416,6 +328,9 @@ public class TronView extends SurfaceView implements Runnable {
         player.fillfuel();
         turnOffGrid();
         paint.setMaskFilter(null);
+
+        mp.seekTo(0);
+        mp.start();
     }
 
     public void turnOffGrid() {
