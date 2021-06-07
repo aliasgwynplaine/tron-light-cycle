@@ -35,7 +35,7 @@ public class Player {
         };
         exploitTimer = new CountDownTimer(700, 50) {
             @Override
-            public void onTick(long millisUntilFinished) { explotionState += 1;Log.d("miau", explotionState+"");}
+            public void onTick(long millisUntilFinished) {explotionState += 1;}
 
             @Override
             public void onFinish() { explotionState = -1;}

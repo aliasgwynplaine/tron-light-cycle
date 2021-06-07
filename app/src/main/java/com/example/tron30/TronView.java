@@ -357,7 +357,6 @@ public class TronView extends SurfaceView implements Runnable {
                 mp.start();
                 player.update();
             }else{
-                Log.d("miau", player.getExplotionState()+"");
 
                 if (player.getExplotionState() == 0) {
                     player.exploit();
