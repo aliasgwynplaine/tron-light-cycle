@@ -104,8 +104,8 @@ public class TronView extends SurfaceView implements Runnable {
                 enemies = new Enemy[3];
                 for (int i=0; i<enemies.length; i++){
                     enemies[i] =  new Enemy(
-                            numWidthBlock*3/4,
-                            numHeightBlock/4*(i+1),
+                            r.nextInt(numWidthBlock),
+                            r.nextInt(numHeightBlock),
                             1,
                             blockSize/2,
                             blockSize/2,
@@ -455,7 +455,10 @@ public class TronView extends SurfaceView implements Runnable {
         // Reset enemies
         for (int i=0; i< level; i++){
             enemies[i].setAlive();
-            enemies[i].setPos(numWidthBlock*3/4, numHeightBlock/4*(i+1));
+            enemies[i].setPos(
+                    r.nextInt(numWidthBlock),
+                    r.nextInt(numHeightBlock)
+            );
             enemies[i].setDir(r.nextInt(4));
             enemies[i].setVelocity(1);
             enemies[i].fillfuel();
