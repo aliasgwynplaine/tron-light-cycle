@@ -14,6 +14,7 @@ import android.view.SurfaceView;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -31,9 +32,12 @@ public class TronView extends SurfaceView implements Runnable {
 
     // Player properties
     protected Player player;
+    int playerState = 0;
 
     // Enemy properties
     Enemy[] enemies;
+    public int level = 1;
+    int countEnemy;
 
     // Map properties
     private float blockSize;
@@ -50,7 +54,6 @@ public class TronView extends SurfaceView implements Runnable {
     private MediaPlayer mp;
     private MediaPlayer mpBoom;
     boolean boom = false;
-    private int level = 3;
 
     // Efect properties
     private Animation animation;
@@ -71,6 +74,7 @@ public class TronView extends SurfaceView implements Runnable {
 
         mp = MediaPlayer.create(getContext(), R.raw.derezzed);
         mpBoom = MediaPlayer.create(getContext(), R.raw.explosion);
+        mpBoom.setVolume(0.2f,0.2f);
         tronFont = ResourcesCompat.getFont(getContext(),R.font.tr2n);
         paint.setTypeface(tronFont);
         post(new Runnable() {
@@ -102,6 +106,7 @@ public class TronView extends SurfaceView implements Runnable {
                 player.setGrid(grid);
 
                 enemies = new Enemy[3];
+                countEnemy=level;
                 for (int i=0; i<enemies.length; i++){
                     enemies[i] =  new Enemy(
                             r.nextInt(numWidthBlock),
@@ -321,7 +326,7 @@ public class TronView extends SurfaceView implements Runnable {
             } else {
                 // Draw Explosion
 
-                paint.setColor(Color.RED);
+                paint.setColor(player.getColor());
 //                canvas.drawCircle(
 //                        player.getPosX()*blockSize,
 //                        player.getPosY()*blockSize,
@@ -329,13 +334,26 @@ public class TronView extends SurfaceView implements Runnable {
 //                        paint
 //                );
 
-                paint.setStrokeWidth(blockSize*.5f);
+                paint.setStrokeWidth(blockSize*.2f);
                 paint.setStyle(Paint.Style.STROKE);
+                paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
 
                 canvas.drawCircle(
                         player.getPosX() * blockSize,
                         player.getPosY() * blockSize,
                         player.getExplotionState() * blockSize,
+                        paint
+                );
+                canvas.drawCircle(
+                        player.getPosX() * blockSize,
+                        player.getPosY() * blockSize,
+                        player.getExplotionState() * blockSize/2,
+                        paint
+                );
+                canvas.drawCircle(
+                        player.getPosX() * blockSize,
+                        player.getPosY() * blockSize,
+                        player.getExplotionState() * blockSize/2*3,
                         paint
                 );
                 paint.setStyle(Paint.Style.FILL);
@@ -354,14 +372,56 @@ public class TronView extends SurfaceView implements Runnable {
                     );
                 } else if(i <level) {
                     // Draw Explosion
-                    paint.setColor(Color.RED);
+                    paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
+                    paint.setColor(enemies[i].getColor());
+                    paint.setStrokeWidth(blockSize*.2f);
+                    paint.setStyle(Paint.Style.STROKE);
+
                     canvas.drawCircle(
                             enemies[i].getPosX() * blockSize,
                             enemies[i].getPosY() * blockSize,
-                            2 * blockSize,
+                            enemies[i].getExplotionState() * blockSize,
                             paint
                     );
+                    canvas.drawCircle(
+                            enemies[i].getPosX() * blockSize,
+                            enemies[i].getPosY() * blockSize,
+                            enemies[i].getExplotionState() * blockSize/3,
+                            paint
+                    );
+                    paint.setStyle(Paint.Style.FILL);
+//                    paint.setMaskFilter(null);
                 }
+            }
+            // PLAYER WIN
+            if (playerState == 1){
+                paint.setMaskFilter(null);
+                paint.setTextSize(7*blockSize);
+                paint.setColor(Color.CYAN);
+                canvas.drawText(
+                        "YOU WIN",
+                        width*.07f,
+                        height*.5f, paint
+                );
+                paint.setColor(Color.YELLOW);
+                canvas.drawText(
+                        "YOU WIN",
+                        width*.07f + .5f*blockSize,
+                        height*.5f + .5f*blockSize,
+                        paint
+                );
+                paint.setColor(Color.WHITE);
+                canvas.drawText(
+                        "YOU WIN",
+                        width*.07f + blockSize,
+                        height*.5f + blockSize,
+                        paint
+                );
+                paint.setTextSize(3*blockSize);
+                paint.setColor(Color.WHITE);
+                canvas.drawText("Press Boost button", width*.1f, height*.7f, paint);
+                canvas.drawText("NEXT LEVEL! "+level, width*.1f, height*.7f+3*blockSize, paint);
+                paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
             }
             // GAME OVER MESSAGE
             if (!player.isAlive()) {
@@ -400,7 +460,7 @@ public class TronView extends SurfaceView implements Runnable {
 
     public void update() {
         if (player != null) {
-            if (player.isAlive()) {
+            if (player.isAlive() && playerState == 0) {
                 boom = false;
                 mp.start();
                 player.update();
@@ -417,10 +477,24 @@ public class TronView extends SurfaceView implements Runnable {
             }
             // Enemies update
             for (int i =0; i< level; i++){
-                if(enemies[i].isAlive()) {
-                    boom = false;
-                    enemies[i].ia();
+                if(enemies[i].isAlive() && playerState == 0) {
+//                    enemies[i].ia();
                     enemies[i].update();
+                    if(!enemies[i].isAlive() && player.isAlive()){
+                        countEnemy--;
+                        if(countEnemy == 0){
+                            playerState = 1;
+                            level +=1;
+                            if (level>3){
+                                playerState = 3;
+                                level = 1;
+                            }
+                        }
+                    }
+                }else {
+                    if (enemies[i].getExplotionState() == 0) {
+                        enemies[i].exploit();
+                    }
                 }
             }
         }
@@ -462,11 +536,13 @@ public class TronView extends SurfaceView implements Runnable {
             enemies[i].setDir(r.nextInt(4));
             enemies[i].setVelocity(1);
             enemies[i].fillfuel();
+            enemies[i].setExplotionState(0);
         }
-
 
         // Game properties reset
         turnOffGrid();
+        countEnemy = level;
+        playerState = 0;
         paint.setMaskFilter(null);
         mp.seekTo(0);
         mpBoom.seekTo(0);
@@ -530,5 +606,13 @@ public class TronView extends SurfaceView implements Runnable {
             }
         }
         lastFrameTime = System.currentTimeMillis();
+    }
+
+    public int getPlayerState() {
+        return playerState;
+    }
+
+    public void setPlayerState(int playerState) {
+        this.playerState = playerState;
     }
 }

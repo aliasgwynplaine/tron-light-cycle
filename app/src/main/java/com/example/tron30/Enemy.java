@@ -33,23 +33,22 @@ public class Enemy extends Player {
         boolean fX, fY, fx, fy; fX = fY = fx = fy = false;
 
         while (!(fX && fY && fx && fy)) {
-
-            if (!fX && iX < grid.length) {
+            if (!fX) {
                 fX = grid[iX][y].isOn();
 
                 if (++iX >= grid.length) fX = true;
             }
-            if (!fx && ix >= 0) {
+            if (!fx) {
                 fx = grid[ix][y].isOn();
 
                 if (--ix < 0) fx = true;
             }
-            if (!fY && iY < grid[0].length) {
+            if (!fY) {
                 fY = grid[x][iY].isOn();
 
                 if (++iY >= grid[0].length) fY = true;
             }
-            if (!fy && iy >= 0) {
+            if (!fy) {
                 fy = grid[x][iy].isOn();
 
                 if (--iy < 0) fy = true;

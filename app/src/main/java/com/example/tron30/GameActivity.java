@@ -7,11 +7,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class GameActivity extends AppCompatActivity {
     Button upButton, downButton, boostButton,
             leftButton, rightButton;
     TronView tronView;
+    TextView levelTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +28,10 @@ public class GameActivity extends AppCompatActivity {
         leftButton = findViewById(R.id.leftButton);
         rightButton = findViewById(R.id.rightButton);
         boostButton = findViewById(R.id.boostButton);
+        levelTextView = findViewById(R.id.levelTextView);
+
+        String levelMessage = "Level: "+tronView.level;
+        levelTextView.setText(levelMessage);
 
         // 0: up, 1: down, 2: left, 3: right
         upButton.setOnClickListener(new View.OnClickListener() {
@@ -68,8 +74,10 @@ public class GameActivity extends AppCompatActivity {
         boostButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!tronView.player.isAlive()) {
+                if (!tronView.player.isAlive() || tronView.getPlayerState()!=0) {
                     tronView.resetGame();
+                    String levelMessage = "Level: "+tronView.level;
+                    levelTextView.setText(levelMessage);
                     return;
                 }
                 if (tronView.player.getVelocity() == 1)
