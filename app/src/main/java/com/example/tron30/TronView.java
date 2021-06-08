@@ -1,6 +1,7 @@
 package com.example.tron30;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,8 +15,6 @@ import android.view.SurfaceView;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
-import android.widget.TextView;
-
 import androidx.core.content.res.ResourcesCompat;
 
 import java.util.Random;
@@ -59,6 +58,9 @@ public class TronView extends SurfaceView implements Runnable {
     // Efect properties
     private Animation animation;
 
+    private Intent intent;
+
+
     public TronView(Context context) {
         super(context);
         Log.d("shittylog", "Constructor 1");
@@ -72,6 +74,7 @@ public class TronView extends SurfaceView implements Runnable {
         holder = getHolder();
         paint = new Paint();
         r = new Random();
+        intent = new Intent(context, YourNameActivity.class);
 
         mp = MediaPlayer.create(getContext(), R.raw.derezzed);
         mp.setLooping(true);
@@ -564,7 +567,8 @@ public class TronView extends SurfaceView implements Runnable {
                     boom = true;
                 }
                 level = 1;
-                //todo: here goes the intent
+                intent.putExtra("score", Integer.toString(score));
+                getContext().startActivity(intent);
                 score = 0;
             }
             // Enemies update

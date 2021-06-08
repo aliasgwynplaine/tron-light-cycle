@@ -19,7 +19,10 @@ public class YourNameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_your_name);
-
+        scoretextview = findViewById(R.id.yourscoretextview);
+        usernameedittext = findViewById(R.id.usernameedittext);
+        submitButton = findViewById(R.id.submitbutton);
+        db = new TronDB(YourNameActivity.this);
         String score = getIntent().getStringExtra("score").trim();
         scoretextview.setText(score);
 
@@ -31,9 +34,8 @@ public class YourNameActivity extends AppCompatActivity {
                 db.open();
                 db.insertScore(username, Integer.parseInt(score));
                 db.close();
-                /*
-                * todo: go back to main activity
-                * */
+                Intent intent = new Intent(YourNameActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
     }
