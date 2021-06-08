@@ -17,6 +17,8 @@ import android.view.animation.RotateAnimation;
 
 import androidx.core.content.res.ResourcesCompat;
 
+import java.util.Random;
+
 
 public class TronView extends SurfaceView implements Runnable {
     private Thread gamethread = null;
@@ -24,6 +26,8 @@ public class TronView extends SurfaceView implements Runnable {
     private boolean playing;
     private Paint paint;
     private Canvas canvas;
+
+    Random r;
 
     // Player properties
     protected Player player;
@@ -63,6 +67,7 @@ public class TronView extends SurfaceView implements Runnable {
         Log.d("shittylog", "Constructor 2");
         holder = getHolder();
         paint = new Paint();
+        r = new Random();
 
         mp = MediaPlayer.create(getContext(), R.raw.derezzed);
         mpBoom = MediaPlayer.create(getContext(), R.raw.explosion);
@@ -103,7 +108,9 @@ public class TronView extends SurfaceView implements Runnable {
                             numHeightBlock/4*(i+1),
                             1,
                             blockSize/2,
-                            blockSize/2);
+                            blockSize/2,
+                            r.nextInt(4)
+                    );
                     enemies[i].setGrid(grid);
                     if (i>level){
                         enemies[i].kill();
@@ -412,6 +419,7 @@ public class TronView extends SurfaceView implements Runnable {
             for (int i =0; i< level; i++){
                 if(enemies[i].isAlive()) {
                     boom = false;
+                    enemies[i].ia();
                     enemies[i].update();
                 }
             }
@@ -448,7 +456,7 @@ public class TronView extends SurfaceView implements Runnable {
         for (int i=0; i< level; i++){
             enemies[i].setAlive();
             enemies[i].setPos(numWidthBlock*3/4, numHeightBlock/4*(i+1));
-            enemies[i].setDir(2);
+            enemies[i].setDir(r.nextInt(4));
             enemies[i].setVelocity(1);
             enemies[i].fillfuel();
         }
