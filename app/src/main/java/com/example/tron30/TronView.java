@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.graphics.fonts.Font;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -99,7 +98,12 @@ public class TronView extends SurfaceView implements Runnable {
 
                 enemies = new Enemy[3];
                 for (int i=0; i<enemies.length; i++){
-                    enemies[i] =  new Enemy(numWidthBlock*3/4, numHeightBlock/4*(i+1), 1, blockSize/2, blockSize/2);
+                    enemies[i] =  new Enemy(
+                            numWidthBlock*3/4,
+                            numHeightBlock/4*(i+1),
+                            1,
+                            blockSize/2,
+                            blockSize/2);
                     enemies[i].setGrid(grid);
                     if (i>level){
                         enemies[i].kill();
@@ -215,22 +219,59 @@ public class TronView extends SurfaceView implements Runnable {
                 for (int j = 0; j < grid[0].length; j++) {
                     if (grid[i][j].isOn()) {
                         paint.setColor(grid[i][j].getColor());
-                        switch (grid[i][j].getDirection()) {// 0: up, 1: down, 2: left, right: 3, 4: 02, 5: 03, 6: 12, 7: 13, 8: 20, 9: 21, 10: 30, 11: 31
+                        switch (grid[i][j].getDirection()) {
+                            // 0: up, 1: down, 2: left, right: 3, 4: 02, 5: 03, 6: 12, 7: 13, 8: 20, 9: 21, 10: 30, 11: 31
                             case 0:
                             case 1:
-                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
+                                canvas.drawRect(
+                                        (i - 0.25f) * blockSize,
+                                        (j - 0.5f) * blockSize,
+                                        (i + 0.25f) * blockSize,
+                                        (j + 0.5f) * blockSize,
+                                        paint
+                                );
                                 break;
                             case 2:
                             case 3:
-                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect(
+                                        (i - 0.5f) * blockSize,
+                                        (j - 0.25f) * blockSize,
+                                        (i + 0.5f) * blockSize,
+                                        (j + 0.25f) * blockSize,
+                                        paint
+                                );
                                 break;
                             case 4:
-                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
-                                canvas.drawRect((i - 0.5f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect(
+                                        (i - 0.25f) * blockSize,
+                                        (j - 0.25f) * blockSize,
+                                        (i + 0.25f) * blockSize,
+                                        (j + 0.5f) * blockSize,
+                                        paint
+                                );
+                                canvas.drawRect(
+                                        (i - 0.5f) * blockSize,
+                                        (j - 0.25f) * blockSize,
+                                        (i + 0.25f) * blockSize,
+                                        (j + 0.25f) * blockSize,
+                                        paint
+                                );
                                 break;
                             case 5:
-                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.25f) * blockSize, (j + 0.5f) * blockSize, paint);
-                                canvas.drawRect((i - 0.25f) * blockSize, (j - 0.25f) * blockSize, (i + 0.5f) * blockSize, (j + 0.25f) * blockSize, paint);
+                                canvas.drawRect(
+                                        (i - 0.25f) * blockSize,
+                                        (j - 0.25f) * blockSize,
+                                        (i + 0.25f) * blockSize,
+                                        (j + 0.5f) * blockSize,
+                                        paint
+                                );
+                                canvas.drawRect(
+                                        (i - 0.25f) * blockSize,
+                                        (j - 0.25f) * blockSize,
+                                        (i + 0.5f) * blockSize,
+                                        (j + 0.25f) * blockSize,
+                                        paint
+                                );
                                 break;
                             case 6:
                                 canvas.drawRect((i - 0.25f) * blockSize, (j - 0.5f) * blockSize, (i + 0.25f) * blockSize, (j + 0.25f) * blockSize, paint);

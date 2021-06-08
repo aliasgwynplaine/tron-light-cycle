@@ -6,9 +6,7 @@ public class MapCell {
     private int color;
     private boolean on;
 
-    public int getDirection() {
-        return direction;
-    }
+    public int getDirection() { return direction; }
 
     public void setDirection(int direction) {
         this.direction = direction;
