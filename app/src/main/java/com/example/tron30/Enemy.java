@@ -22,8 +22,8 @@ public class Enemy extends Player {
     }
 
     public void ia() {
+        if (!isAlive()) return;
         // 0: up, 1: down, 2: left, 3: right
-        Log.d("shittylog", "IA");
 
         if (getVelocity() == 1 && r.nextFloat() <= 0.01) {
             boost();
@@ -31,6 +31,12 @@ public class Enemy extends Player {
         int x = getPosX(), y = getPosY();
         int iX = x + 1, ix = x - 1, iY = y + 1, iy = y - 1;
         boolean fX, fY, fx, fy; fX = fY = fx = fy = false;
+
+        if (iX >= grid.length) fX = true;
+        if (iY >= grid.length) fY = true;
+        if (iy <= 0) fy = true;
+        if (ix <= 0) fx = true;
+
 
         while (!(fX && fY && fx && fy)) {
             if (!fX) {
@@ -41,7 +47,7 @@ public class Enemy extends Player {
             if (!fx) {
                 fx = grid[ix][y].isOn();
 
-                if (--ix < 0) fx = true;
+                if (--ix <= 0) fx = true;
             }
             if (!fY) {
                 fY = grid[x][iY].isOn();
@@ -51,16 +57,15 @@ public class Enemy extends Player {
             if (!fy) {
                 fy = grid[x][iy].isOn();
 
-                if (--iy < 0) fy = true;
+                if (--iy <= 0) fy = true;
             }
         }
 
         int dX = iX - x, dY = iY - y, dx = x - ix, dy = y - iy;
-        Log.d("shittylog", "dX, dx, dY, dy: " + dX+" "+dx+" "+dY+" "+dy);
 
         switch (getDir()) {
             case 0 :
-                if (dY <= 2) {
+                if (dy <= 2) {
                     if (dX >= dx) nextDirection(3);
                     else nextDirection(2);
                     time2random = 20;
@@ -68,7 +73,7 @@ public class Enemy extends Player {
                 }
                 break;
             case 1 :
-                if (dy <= 2) {
+                if (dY <= 2) {
                     if (dX > dx) nextDirection(3);
                     else nextDirection(2);
                     time2random = 20;

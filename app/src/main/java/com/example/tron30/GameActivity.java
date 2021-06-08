@@ -14,7 +14,6 @@ public class GameActivity extends AppCompatActivity {
             leftButton, rightButton;
     TronView tronView;
     TextView levelTextView;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +31,7 @@ public class GameActivity extends AppCompatActivity {
 
         String levelMessage = "Level: "+tronView.level;
         levelTextView.setText(levelMessage);
+        String scoreMessage = "\tSCORE: "+ tronView.score;
 
         // 0: up, 1: down, 2: left, 3: right
         upButton.setOnClickListener(new View.OnClickListener() {
